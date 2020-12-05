@@ -7,7 +7,7 @@ server = Server()
 @app.route('/issue-key', methods=['POST'])
 def issue_key():
     req = request.get_json()
-    response = server.issue_key(req["id"], req["type"])
+    response = server.issue_key(req["user_id"], req["type"])
     return jsonify(response)
 
 @app.route('/get-sign', methods=['POST'])
