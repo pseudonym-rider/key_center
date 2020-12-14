@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from pygroupsig import grpkey, constants, groupsig
 from pygroupsig import signature, identity, message
-from pygroupsig import grpkey, mgrkey, memkey, gml
+from pygroupsig import grpkey, mgrkey, memkey, gml as GML
 import threading
 
 
@@ -23,10 +23,34 @@ class Server:
         self._my_store_gml_id_to_idx = {}
         self._my_store_gml_idx_to_id = {}
 
-        self.setup()
+        # 기존에 세팅된 그룹서명 값들이 존재하는지 검사하는 코드 필요
+        # setting = check()
+        setting = True
+
+        self.setup(setting)
 
     # set keys
-    def setup(self):
+    def setup(self, setting):
+        # 세팅된 값 불러오기
+        if setting:
+            # base64_user_gpk, base64_user_msk <- DB에서 불러오기
+            # base64_store_gpk, base64_store_msk <- DB에서 불러오기
+            base64_user_gpk = ""
+            base64_user_msk = ""
+            base64_store_gpk = ""
+            base64_store_msk = ""
+
+            self._user_gpk = grpkey.grpkey_import(constants.BBS04_CODE, base64_user_gpk)
+            self._user_msk = mgrkey.mgrkey_import(constants.BBS04_CODE, base64_user_msk)
+            self._user_gml = GML.gml_import(constants.BBS04_CODE,
+                                            bytes("./user-gml".encode()))  # 무조건 파일로 밖에 못 불러옴. 파일명은 bytes() 써서 해줘야 됨
+            self._store_gpk = grpkey.grpkey_import(constants.BBS04_CODE, base64_store_gpk)
+            self._store_msk = mgrkey.mgrkey_import(constants.BBS04_CODE, base64_store_msk)
+            self._store_gml = GML.gml_import(constants.BBS04_CODE,
+                                             bytes("./store-gml".encode()))  # 무조건 파일로 밖에 못 불러옴. 파일명은 bytes() 써서 해줘야 됨
+            return
+
+        # 세팅된 값 없으므로 새로 생성
         groupsig.init(constants.BBS04_CODE, 0)
         bbs04_user = groupsig.setup(constants.BBS04_CODE)
         bbs04_store = groupsig.setup(constants.BBS04_CODE)
@@ -38,8 +62,24 @@ class Server:
         self._store_gml = bbs04_store["gml"]
         self._store_msk = bbs04_store["mgrkey"]
 
+        base64_user_gpk = grpkey.grpkey_export(self._user_gpk)
+        base64_user_msk = mgrkey.mgrkey_export(self._user_msk)
+        GML.gml_export(self._user_gml, bytes("./user-gml".encode()))  # 무조건 파일로 밖에 저장이 안됨. 파일명은 bytes() 써서 해줘야 됨
+        base64_store_gpk = grpkey.grpkey_export(self._store_gpk)
+        base64_store_msk = mgrkey.mgrkey_export(self._store_msk)
+        GML.gml_export(self._store_gml, bytes("./store-gml".encode()))  # 무조건 파일로 밖에 저장이 안됨. 파일명은 bytes() 써서 해줘야 됨
+        # base64_user_gpk, base64_user_msk -> DB 저장
+        # base64_store_gpk, base64_store_msk -> DB 저장
+        # 여기 코드는 아닌데, issue-key할 때도 계속해서 gml 업데이트해서 파일로 쓰기로 코드 수정해놨음
+
     # add member to my gml
     def update_my_gml(self, id, usk, group_type):
+        # 항상 gml 업데이트
+        if group_type == Server._TYPE_USER:
+            GML.gml_export(self._user_gml, bytes("./user-gml".encode()))
+        if group_type == Server._TYPE_STORE:
+            GML.gml_export(self._store_gml, bytes("./store-gml".encode()))
+
         grpkey, mgrkey, gml, my_id_to_idx, my_idx_to_id \
             = None, None, None, None, None
 
@@ -130,4 +170,4 @@ class Server:
         mem_id = identity.identity_to_string(member)
         user_id = my_idx_to_id[mem_id]
 
-        return user_id
+        return {"uid": user_id}
