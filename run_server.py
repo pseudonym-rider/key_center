@@ -30,11 +30,11 @@ def open_sign():
 def receive_qr():
     req = request.get_json()
 
-    user_id = req["user-id"]
-    store_id = req["store-id"]
+    user_id = req["user_id"]
+    store_id = req["store_id"]
     qr_time = req["time"]
-    user_secret = req["user-secret"]
-    store_secret = req["store-secret"]
+    user_secret = req["user_secret"]
+    store_secret = req["store_secret"]
 
     now_time = (datetime.utcnow() - datetime(1970, 1, 1)).total_seconds()
 
@@ -51,42 +51,21 @@ def receive_qr():
 
     # save qr code to db
     doc = {
-        "user-id": user_id,
+        "user_id": user_id,
         "time": qr_time,
-        "user-sign": signs_of_user_data["user-sign"],
-        "store-sign": signs_of_user_data["store-sign"]
+        "user_sign": signs_of_user_data["user_sign"],
+        "store_sign": signs_of_user_data["store_sign"]
     }
     user_to_store_collection.insert(doc)
     doc = {
-        "store-id": store_id,
+        "store_id": store_id,
         "time": qr_time,
-        "user-sign": signs_of_store_data["user-sign"],
-        "store-sign": signs_of_store_data["store-sign"]
+        "user_sign": signs_of_store_data["user_sign"],
+        "store_sign": signs_of_store_data["store_sign"]
     }
     store_to_user_collection.insert(doc)
 
     return jsonify({"response": True})
-
-
-# check for the succesful update
-@app.route('/check-mongo', methods=['POST'])
-def check_mongo():
-    req = request.get_json()
-
-    user_id = req["user-id"]
-    store_id = req["store-id"]
-
-    u2s_dict = user_to_store_collection.find({"user-id": user_id})
-    s2u_dict = store_to_user_collection.find({"store-id": store_id})
-
-    print("u2s_dict =>")
-    for x in u2s_dict:
-        print(x)
-    print("s2u_dict =>")
-    for x in s2u_dict:
-        print(x)
-    return jsonify({"u2s_dict": u2s_dict, "s2u_dict": s2u_dict})
-
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port='80')
