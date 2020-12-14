@@ -130,4 +130,4 @@ class Server:
         mem_id = identity.identity_to_string(member)
         user_id = my_idx_to_id[mem_id]
 
-        return {"uid": user_id}
+        return user_id
