@@ -6,7 +6,7 @@ import config
 
 app = Flask(__name__)
 server = Server()
-client = MongoClient("172.17.0.3")
+client = MongoClient(config.ip)
 qr_db = client.qr_db
 user_to_store_collection = qr_db.user_to_store
 store_to_user_collection = qr_db.store_to_user
@@ -18,12 +18,6 @@ def issue_key():
     response = server.issue_key(req["id"], req["type"])
     return jsonify(response)
 
-
-# @app.route('/request/get-sign', methods=['POST'])
-# def get_sign():
-#     req = request.get_json()
-#     response = server.sign_msg(req["body"], req["usk"], req["type"])
-#     return jsonify(response)
 
 @app.route('/request/find-signatory', methods=['POST'])
 def open_sign():
