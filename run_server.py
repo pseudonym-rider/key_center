@@ -102,7 +102,7 @@ def getPerson():
         visitor = store_to_user.find({'store_id': store['store_id']})
         for person in visitor:
             people.append({
-                'user_id': server.open_sign(person['user_sign'], "1"),
+                'user_id': server.open_sign(person['user_sign'], "1")['uid'],
                 'time': person['time']
             })
 
