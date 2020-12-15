@@ -188,8 +188,11 @@ class Server:
         mem_id = identity.identity_to_string(member)
 
         #################################################################################################
-        user_id = db.user_id_and_idx.find_one({'idx': mem_id})['id']
+        if group_type == Server._TYPE_USER:
+            user_id = db.user_id_and_idx.find_one({'idx': mem_id})
+        if group_type == Server._TYPE_STORE:
+            user_id = db.user_id_and_idx.find_one({'idx': mem_id})
         # my_gml_mongo에서 "idx":mem_id인 document의 "id"값 불러오기
         # user_id = my_gml_mongo.find()
 
-        return {"uid": user_id}
+        return {"uid": user_id['id']}
