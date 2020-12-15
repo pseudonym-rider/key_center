@@ -6,10 +6,6 @@ import config
 
 app = Flask(__name__)
 server = Server()
-client = MongoClient(config.ip)
-qr_db = client.qr_db
-user_to_store_collection = qr_db.user_to_store
-store_to_user_collection = qr_db.store_to_user
 
 
 @app.route('/request/issue-key', methods=['POST'])
@@ -30,11 +26,11 @@ def open_sign():
 def receive_qr():
     req = request.get_json()
 
-    user_id = req["user-id"]
-    store_id = req["store-id"]
+    user_id = req["user_id"]
+    store_id = req["store_id"]
     qr_time = req["time"]
-    user_secret = req["user-secret"]
-    store_secret = req["store-secret"]
+    user_secret = req["user_secret"]
+    store_secret = req["store_secret"]
 
     now_time = (datetime.utcnow() - datetime(1970, 1, 1)).total_seconds()
 
@@ -49,43 +45,68 @@ def receive_qr():
     signs_of_user_data = server.sign_msg(user_data, user_secret, store_secret)
     signs_of_store_data = server.sign_msg(store_data, user_secret, store_secret)
 
+    conn = MongoClient(config.ip)
+    db = conn.key_center
+    user_to_store_collection = db.user_to_store
+    store_to_user_collection = db.store_to_user
+
     # save qr code to db
     doc = {
-        "user-id": user_id,
+        "user_id": user_id,
         "time": qr_time,
-        "user-sign": signs_of_user_data["user-sign"],
-        "store-sign": signs_of_user_data["store-sign"]
+        "user_sign": signs_of_user_data["user_sign"],
+        "store_sign": signs_of_user_data["store_sign"]
     }
     user_to_store_collection.insert(doc)
     doc = {
-        "store-id": store_id,
+        "store_id": store_id,
         "time": qr_time,
-        "user-sign": signs_of_store_data["user-sign"],
-        "store-sign": signs_of_store_data["store-sign"]
+        "user_sign": signs_of_store_data["user_sign"],
+        "store_sign": signs_of_store_data["store_sign"]
     }
     store_to_user_collection.insert(doc)
 
     return jsonify({"response": True})
 
 
-# check for the succesful update
-@app.route('/check-mongo', methods=['POST'])
-def check_mongo():
+@app.route('/get-store', methods=['POST'])
+def getStore():
     req = request.get_json()
 
-    user_id = req["user-id"]
-    store_id = req["store-id"]
+    conn = MongoClient(config.ip)
+    db = conn.key_center
+    user_to_store = db.user_to_store
 
-    u2s_dict = user_to_store_collection.find({"user-id": user_id})
-    s2u_dict = store_to_user_collection.find({"store-id": store_id})
+    storesSigns = user_to_store.find({'user_id': req['user_id']})
+    stores = []
 
-    print("u2s_dict =>")
-    for x in u2s_dict:
-        print(x)
-    print("s2u_dict =>")
-    for x in s2u_dict:
-        print(x)
-    return jsonify({"u2s_dict": u2s_dict, "s2u_dict": s2u_dict})
+    for value in storesSigns:
+        stores.append({
+            'store_id': server.open_sign(value['store_sign'], "2"),
+            'time': value['time']
+        })
+
+    return jsonify(stores)
+
+
+@app.route('/get-person', methods=['POST'])
+def getPerson():
+    req = request.get_json()
+
+    conn = MongoClient(config.ip)
+    db = conn.key_center
+    store_to_user = db.store_to_user
+
+    people = []
+    for store in req['data']:
+        visitor = store_to_user.find({'store_id': store['store_id']})
+        for person in visitor:
+            people.append({
+                'user_id': server.open_sign(person['user_sign'], "1"),
+                'time': person['time']
+            })
+
+    return jsonify(people)
 
 
 if __name__ == "__main__":
