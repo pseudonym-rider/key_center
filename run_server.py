@@ -19,12 +19,6 @@ def issue_key():
     return jsonify(response)
 
 
-# @app.route('/request/get-sign', methods=['POST'])
-# def get_sign():
-#     req = request.get_json()
-#     response = server.sign_msg(req["body"], req["usk"], req["type"])
-#     return jsonify(response)
-
 @app.route('/request/find-signatory', methods=['POST'])
 def open_sign():
     req = request.get_json()
@@ -74,46 +68,24 @@ def receive_qr():
     return jsonify({"response": True})
 
 
-@app.route('/get-store', methods=['GET'])
-def getStore():
+# check for the succesful update
+@app.route('/check-mongo', methods=['POST'])
+def check_mongo():
     req = request.get_json()
 
-    conn = MongoClient(config.ip)
-    db = conn.key_center
-    user_to_store = db.user_to_store
+    user_id = req["user-id"]
+    store_id = req["store-id"]
 
-    storesSigns = user_to_store.find({'user_id': req['user_id']})
-    stores = []
+    u2s_dict = user_to_store_collection.find({"user-id": user_id})
+    s2u_dict = store_to_user_collection.find({"store-id": store_id})
 
-    for value in storesSigns:
-        stores.append({
-            'store_id': server.open_sign(value['store_sign'], '2'),
-            'time': value['time']
-        })
-
-    return jsonify(stores)
-
-    '''
-    user_to_store_collection의 
-    개인 id 입력 -> 방문한 점포 sign을 모두 찾음(sSigns)
-    -> 찾은 점포 sign을 오픈하여 점포 id를 찾음
-    -> 찾은 점포 id에 방문한 모든 사용자의 sign 을 찾음
-    -> 찾은 sign을 open하여 user_id를 찾음
-    -> 찾은 user_id를 통해 user의 정보를 모두 반환함
-    '''
-
-
-@app.route('/get-person', methods=['POST'])
-def getPerson():
-    req = request.get_json()
-
-    conn = MongoClient(config.ip)
-    db = conn.key_center
-    store_to_user = db.store_to_user
-
-    people = []
-    for store in req['data']:
-        store
+    print("u2s_dict =>")
+    for x in u2s_dict:
+        print(x)
+    print("s2u_dict =>")
+    for x in s2u_dict:
+        print(x)
+    return jsonify({"u2s_dict": u2s_dict, "s2u_dict": s2u_dict})
 
 
 if __name__ == "__main__":
