@@ -8,14 +8,14 @@ app = Flask(__name__)
 server = Server()
 
 
-@app.route('/request/issue-key', methods=['POST'])
+@app.route('/issue-key', methods=['POST'])
 def issue_key():
     req = request.get_json()
     response = server.issue_key(req["id"], req["type"])
     return jsonify(response)
 
 
-@app.route('/request/find-signatory', methods=['POST'])
+@app.route('/find-signatory', methods=['POST'])
 def open_sign():
     req = request.get_json()
     response = server.open_sign(req["sign"], req["type"])
@@ -82,7 +82,7 @@ def getStore():
 
     for value in storesSigns:
         stores.append({
-            'store_id': server.open_sign(value['store_sign'], "2"),
+            'store_id': server.open_sign(value['store_sign'], "2")['uid'],
             'time': value['time']
         })
 
