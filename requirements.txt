@@ -1,6 +1,7 @@
 cffi==1.14.4
 click==7.1.2
 Flask==1.1.2
+Flask-JWT-Extended==3.25.0
 itsdangerous==1.1.0
 Jinja2==2.11.2
 MarkupSafe==1.1.1
@@ -8,5 +9,8 @@ path==15.0.0
 path.py==12.5.0
 pycparser==2.20
 pygroupsig==0.1.1
+PyJWT==1.7.1
 pymongo==3.11.2
+six==1.15.0
+uWSGI==2.0.18
 Werkzeug==1.0.1

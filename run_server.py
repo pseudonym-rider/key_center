@@ -2,32 +2,59 @@ from flask import Flask, jsonify, request
 from server import Server
 from pymongo import MongoClient
 from datetime import datetime
+import json
+import requests
 import config
 
 app = Flask(__name__)
 server = Server()
 
+app.config['JWT_SECRET_KEY'] = config.key
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = config.access
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = config.refresh
 
-@app.route('/issue-key', methods=['POST'])
+
+@app.route('/issue-key', methods=['GET'])
+@jwt_refresh_token_required
 def issue_key():
     req = request.get_json()
-    response = server.issue_key(req["id"], req["type"])
+    response = server.issue_key(get_jwt_identity(), request.args['type'])
     return jsonify(response)
 
 
-@app.route('/find-signatory', methods=['POST'])
-def open_sign():
-    req = request.get_json()
-    response = server.open_sign(req["sign"], req["type"])
-    return jsonify(response)
+@app.route('/key-identifier', methods=['GET'])
+@jwt_required
+def key_identifier():
+    return jsonify(id=get_jwt_identity())
 
 
 @app.route('/receive-qr', methods=['POST'])
+@jwt_refresh_token_required
 def receive_qr():
     req = request.get_json()
+    # print(html)
+    url = "http://127.0.0.1:5000?user_sign=1"
+    user_token = req["user_token"]
+    store_token = req["store_token"]
 
-    user_id = req["user_id"]
-    store_id = req["store_id"]
+    user_id = json.loads(requests.get(url, headers={'Content-Type': 'application/json', 'Authorization': 'Bearer {}'.format(user_token)}).content.decode())
+    store_id = json.loads(requests.get(url, headers={'Content-Type': 'application/json', 'Authorization': 'Bearer {}'.format(store_token)}).content.decode())
+
+    try:
+        user_id = user_id['id']
+    except:
+        return jsonify(code=1, msg="user token failed"), 401
+
+    try:
+        store_id = store_id['id']
+    except:
+        return jsonify(code=2, msg="store token failed"), 401
+
+    return jsonify(user_id=user_id, store_id=store_id)
+
+
+    user_id = user_id
+    store_id = store_id
     qr_time = req["time"]
     user_secret = req["user_secret"]
     store_secret = req["store_secret"]
@@ -103,6 +130,7 @@ def getPerson():
         for person in visitor:
             people.append({
                 'user_id': server.open_sign(person['user_sign'], "1")['uid'],
+                'store_id': store['store_id'],
                 'time': person['time']
             })
 
