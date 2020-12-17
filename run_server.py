@@ -16,9 +16,10 @@ app.config['JWT_SECRET_KEY'] = config.key
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = config.access
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = config.refresh
 
+jwt = JWTManager(app)
 
 @app.route('/issue-key', methods=['GET'])
-@jwt_refresh_token_required
+@jwt_required
 def issue_key():
     response = server.issue_key(get_jwt_identity(), str(request.args['type']))
     return jsonify(response)
