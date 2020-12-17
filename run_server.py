@@ -54,9 +54,6 @@ def receive_qr():
 
     return jsonify(user_id=user_id, store_id=store_id)
 
-
-    user_id = user_id
-    store_id = store_id
     qr_time = req["time"]
     user_secret = req["user_secret"]
     store_secret = req["store_secret"]
