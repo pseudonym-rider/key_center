@@ -2,6 +2,9 @@ from flask import Flask, jsonify, request
 from server import Server
 from pymongo import MongoClient
 from datetime import datetime
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token, get_jwt_identity, unset_jwt_cookies, create_refresh_token, jwt_refresh_token_required,
+)
 import json
 import requests
 import config
