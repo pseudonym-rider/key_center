@@ -20,8 +20,7 @@ app.config['JWT_REFRESH_TOKEN_EXPIRES'] = config.refresh
 @app.route('/issue-key', methods=['GET'])
 @jwt_refresh_token_required
 def issue_key():
-    req = request.get_json()
-    response = server.issue_key(get_jwt_identity(), request.args['type'])
+    response = server.issue_key(get_jwt_identity(), str(request.args['type']))
     return jsonify(response)
 
 
