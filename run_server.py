@@ -32,7 +32,6 @@ def key_identifier():
 
 
 @app.route('/receive-qr', methods=['POST'])
-@jwt_refresh_token_required
 def receive_qr():
     req = request.get_json()
     # print(html)
@@ -99,8 +98,24 @@ def receive_qr():
     return jsonify({"response": True})
 
 
+def isManager(user_id):
+    conn = MongoClient(config.ip)
+    db = conn.main_server
+    member = db.member
+
+    manager = member.find({'user_id': user_id})
+    if manager['grant'] == 'True':
+        return True
+
+    return False
+
+
 @app.route('/get-store', methods=['POST'])
+@jwt_required
 def getStore():
+    if not isManager(id=get_jwt_identity()):
+        return jsonify(code=1, msg="This user is not authorized.")
+
     req = request.get_json()
 
     conn = MongoClient(config.ip)
@@ -120,7 +135,11 @@ def getStore():
 
 
 @app.route('/get-person', methods=['POST'])
+@jwt_required
 def getPerson():
+    if not isManager(id=get_jwt_identity()):
+        return jsonify(code=1, msg="This user is not authorized.")
+
     req = request.get_json()
 
     conn = MongoClient(config.ip)
