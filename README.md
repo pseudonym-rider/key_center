@@ -62,7 +62,27 @@
     - SUCCESS RESPONSE
     - Header
       - Content-type: application/json
-    - body
-      - | key | value | type |
-        |--- |--- |--- |
-        | response | True | String |
+    - body(ex)
+      - [
+        
+            {
+                "store_id": "ghdrlfehd123",
+                "time": "1608277380"
+            },
+            {
+                "store_id": "ghdrlfehd123",
+                "time": "1608277572"
+            },
+            {
+                "store_id": "Null",
+                "time": "1608277666"
+            },
+            {
+                "store_id": "Null",
+                "time": "1608277681"
+            },
+            {
+                "store_id": "Null",
+                "time": "1608277696"
+            }
+        ]
