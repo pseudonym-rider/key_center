@@ -34,12 +34,19 @@ def key_identifier():
 def receive_qr():
     req = request.get_json()
 
-    url = "http://127.0.0.1:5000?user_sign=1"
+    url = "http://127.0.0.1/key-identifier"
     user_token = req["user_token"]
     store_token = req["store_token"]
 
-    user_id = json.loads(requests.get(url, headers={'Content-Type': 'application/json', 'Authorization': 'Bearer {}'.format(user_token)}).content.decode())
-    store_id = json.loads(requests.get(url, headers={'Content-Type': 'application/json', 'Authorization': 'Bearer {}'.format(store_token)}).content.decode())
+    try:
+        user_id = json.loads(requests.get(url, headers={'Content-Type': 'application/json',
+                                                        'Authorization': 'Bearer {}'.format(
+                                                            user_token)}).content.decode())
+        store_id = json.loads(requests.get(url, headers={'Content-Type': 'application/json',
+                                                         'Authorization': 'Bearer {}'.format(
+                                                             store_token)}).content.decode())
+    except Exception as e:
+        return jsonify(msg=str(e))
 
     try:
         user_id = user_id['id']
@@ -50,8 +57,6 @@ def receive_qr():
         store_id = store_id['id']
     except:
         return jsonify(code=2, msg="store token failed"), 401
-
-    return jsonify(user_id=user_id, store_id=store_id)
 
     qr_time = req["time"]
     user_secret = req["user_secret"]

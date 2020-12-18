@@ -3,40 +3,66 @@
 
 ## 개인 키 생성
 - URI : https://key.prider.xyz/issue-key
-- METHOD : POST
+- METHOD : GET
 - request
-
-    | key | explanation | type |
-    |--- |--- |--- |
-    | user_id | User id | string |
-    | type | User type | string |
+    - Header :
+        - Authorization: Bearer <Access token>
+    - body: 
+        - | key | explanation | type |
+          |--- |--- |--- |
+          | type | User type | string |
     
 - response code
-    - Header :
-        Content-Type : application/json
     - SUCCESS RESPONSE
-    
-        | key | value | type |
+    - Header
+      - Content-type: application/json
+    - body
+      - | key | value | type |
         |--- |--- |--- |
         | gpk | Group public key | String |
         | usk | User private key | String |
 
-## 개인 키 서명
-- URI : https://key.prider.xyz/get-sign
+## QR인증
+- URI : https://key.prider.xyz/receive-qr
 - METHOD : POST
 - request
-
-    | key | explanation | type |
-    |--- |--- |--- |
-    | usk | User private key | string |
-    | type | User type | string |
-    | body | Payload | string |
+    - Header
+      - Content-type: application/json
+    - body
+      - | key | explanation | type |
+        |--- |--- |--- |
+        | user_token | JWT access token | string |
+        | store_token | JWT access token | string |
+        | time | Current time | string |
+        | user_secret | user private key | string |
+        | store_secret | store private key | string |
     
 - response code
-    - Header :
-        Content-Type : application/json
     - SUCCESS RESPONSE
-    
-        | key | value | type |
+    - Header
+      - Content-type: application/json
+    - body
+      - | key | value | type |
         |--- |--- |--- |
-        | sign | Signed value | String |
+        | response | True | String |
+
+## 상점 id list 가져오기
+- URI : https://key.prider.xyz/get-store
+- METHOD : POST
+- request
+    - Header
+      - Content-type: application/json
+      - Authorization: Bearer <Access token>
+    - body
+      - | key | explanation | type |
+        |--- |--- |--- |
+        | user_id | user_id | string |
+        
+- response code
+    - SUCCESS RESPONSE
+    - Header
+      - Content-type: application/json
+    - body
+      - | key | value | type |
+        |--- |--- |--- |
+        | response | True | String |
