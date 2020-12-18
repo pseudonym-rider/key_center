@@ -11,8 +11,6 @@ app = Flask(__name__)
 server = Server()
 
 app.config['JWT_SECRET_KEY'] = config.key
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = config.access
-app.config['JWT_REFRESH_TOKEN_EXPIRES'] = config.refresh
 
 jwt = JWTManager(app)
 
@@ -38,15 +36,11 @@ def receive_qr():
     user_token = req["user_token"]
     store_token = req["store_token"]
 
-    try:
-        user_id = json.loads(requests.get(url, headers={'Content-Type': 'application/json',
-                                                        'Authorization': 'Bearer {}'.format(
-                                                            user_token)}).content.decode())
-        store_id = json.loads(requests.get(url, headers={'Content-Type': 'application/json',
-                                                         'Authorization': 'Bearer {}'.format(
-                                                             store_token)}).content.decode())
-    except Exception as e:
-        return jsonify(msg=str(e))
+    user_id = json.loads(requests.get(url, headers={'Content-Type': 'application/json',
+                                                    'Authorization': 'Bearer {}'.format(user_token)}).content.decode())
+    store_id = json.loads(requests.get(url, headers={'Content-Type': 'application/json',
+                                                     'Authorization': 'Bearer {}'.format(
+                                                         store_token)}).content.decode())
 
     try:
         user_id = user_id['id']
@@ -104,9 +98,11 @@ def isManager(user_id):
     db = conn.main_server
     member = db.member
 
-    manager = member.find({'user_id': user_id})
-    if manager['grant'] == 'True':
-        return True
+    manager = member.find_one({'user_id': user_id})
+
+    if manager['type'] == '3':
+        if manager['grant'] == 'True':
+            return True
 
     return False
 
@@ -114,8 +110,11 @@ def isManager(user_id):
 @app.route('/get-store', methods=['POST'])
 @jwt_required
 def getStore():
-    if not isManager(id=get_jwt_identity()):
-        return jsonify(code=1, msg="This user is not authorized.")
+    try:
+        if not isManager(user_id=get_jwt_identity()):
+            return jsonify(code=1, msg="This user is not authorized."), 401
+    except Exception as e:
+        return jsonify(msg="Unregistered Manager"), 401
 
     req = request.get_json()
 
@@ -138,8 +137,11 @@ def getStore():
 @app.route('/get-person', methods=['POST'])
 @jwt_required
 def getPerson():
-    if not isManager(id=get_jwt_identity()):
-        return jsonify(code=1, msg="This user is not authorized.")
+    try:
+        if not isManager(user_id=get_jwt_identity()):
+            return jsonify(code=1, msg="This user is not authorized."), 401
+    except Exception as e:
+        return jsonify(msg="Unregistered Manager"), 401
 
     req = request.get_json()
 
