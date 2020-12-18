@@ -2,9 +2,7 @@ from flask import Flask, jsonify, request
 from server import Server
 from pymongo import MongoClient
 from datetime import datetime
-from flask_jwt_extended import (
-    JWTManager, jwt_required, create_access_token, get_jwt_identity, unset_jwt_cookies, create_refresh_token, jwt_refresh_token_required,
-)
+from flask_jwt_extended import (JWTManager, jwt_required, get_jwt_identity)
 import json
 import requests
 import config
@@ -17,6 +15,7 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = config.access
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = config.refresh
 
 jwt = JWTManager(app)
+
 
 @app.route('/issue-key', methods=['GET'])
 @jwt_required
@@ -34,7 +33,7 @@ def key_identifier():
 @app.route('/receive-qr', methods=['POST'])
 def receive_qr():
     req = request.get_json()
-    # print(html)
+
     url = "http://127.0.0.1:5000?user_sign=1"
     user_token = req["user_token"]
     store_token = req["store_token"]
