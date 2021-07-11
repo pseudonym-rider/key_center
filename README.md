@@ -1,5 +1,5 @@
 # Key Center
-그룹서명 키 발급, 서명을 해주는 Key Center 입니다.
+그룹서명 키 발급, 서명을 해주는 Key Center 입니다..
 
 ## 개인 키 생성
 - URI : https://key.prider.xyz/issue-key
